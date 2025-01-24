@@ -129,7 +129,7 @@ def rle_to_mask(rle):
     return mask.reshape((height, width))
 
 
-def annotation_items(annotation):
+def annotation_items(annotation, coco):
   segmnt = annotation['segmentation']
   if  annotation['iscrowd']== 0:
     polygons_lists = segmnt
@@ -163,7 +163,7 @@ def get_OBB(hull, width, height):
   return selected_box
 
 
-def show_obbox(I_plot,obboxes=[[]], with_obb=True, with_segment = False, with_regula_bb = False):
+def show_obbox(I_plot,coco, obboxes=[[]], with_obb=True, with_segment = False, with_regula_bb = False):
   plt.imshow(I_plot); plt.axis('off')
   # Add polygons to the existing plot
   if with_segment:
