@@ -164,6 +164,7 @@ def get_OBB(hull, width, height):
 
 
 def show_obbox(I_plot, coco, obboxes=[[]],  anns=None, with_obb=True, with_segment = False, with_regula_bb = False):
+  plt.figure()
   plt.imshow(I_plot); plt.axis('off')
   # Add polygons to the existing plot
   if with_segment:
