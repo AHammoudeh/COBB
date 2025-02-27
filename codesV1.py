@@ -17,7 +17,6 @@ from matplotlib.patches import Polygon as MatplotlibPolygon
 #from PIL import Image
 pylab.rcParams['figure.figsize'] = (4.0, 6.0)
 
-
 # Function to calculate rotated rectangles using rotating calipers
 def rotating_calipers_rectangles(hull):
     rectangles = []
@@ -106,7 +105,6 @@ def intersection_area(rect1: np.ndarray, rect2: np.ndarray, plot=False) -> float
         return 0.0  # No intersection
     return intersection.area
 
-
 def rle_to_mask(rle):
     """
     Converts Run-Length Encoding (RLE) to a binary segmentation mask.
@@ -134,7 +132,6 @@ def rle_to_mask(rle):
         start += length
     # Reshape the flat mask into the specified 2D shape
     return mask.reshape((width, height))
-
 
 def find_main_axis(mask):
     # Get the coordinates of the object (where mask == 1)
@@ -169,7 +166,8 @@ def oriented_bbox(mask, direction_vector, center):
     rectangle = np.dot(rectangle, rotation_matrix) + center
     return rectangle
 
-def annotation_2_category(annotation):
+
+def annotation_2_category(annotation, coco):
   category_id = annotation['category_id']
   categories = coco.loadCats(category_id)
   if categories:
@@ -177,12 +175,12 @@ def annotation_2_category(annotation):
   else:
       return "NA"
 
-def annotation_items(annotation):
+def annotation_items(annotation, coco):
   image_id = annotation['image_id']
   image_info = coco.loadImgs(image_id)[0]
   image_height = image_info['height']
   image_width = image_info['width']
-  object_name = annotation_2_category(annotation)
+  object_name = annotation_2_category(annotation, coco)
   segmnt = annotation['segmentation']
   if annotation['iscrowd']== 0:
     polygons_lists = segmnt
@@ -207,7 +205,7 @@ def get_OBB(annotation, method='regular', plot=False):
   #method = ['regular', 'PCA', 'rotating_calipers','logest_edge']
   #flattened_list = [item for sublist in polygons_lists for item in sublist]
   #hull = np.array(flattened_list).reshape([-1,1,2])
-  hull, image_width, image_height, object_name, mask = annotation_items(annotation)
+  hull, image_width, image_height, object_name, mask = annotation_items(annotation, coco)
   rectangles, rect_aligned_with_maxEdge = rotating_calipers_rectangles(hull)
 
   if  method == 'rotating_calipers':
@@ -235,12 +233,13 @@ def get_OBB(annotation, method='regular', plot=False):
     annotation['direction']= direction
   return selected_box
 
-def BB_criterion(annotations, standard_method='regular',
+
+def BB_criterion(annotations,coco, standard_method='regular',
             floating_objects=[], Standing_objects=[],objects_with_axis=[]):
   #All_objects = floating_objects+Standing_objects+objects_with_axis
   if standard_method != 'None':
     for annotation in annotations:
-      category = annotation_2_category(annotation)
+      category = annotation_2_category(annotation, coco)
       #print(category)
       #method = ['None', 'regular', 'PCA', 'rotating_calipers','logest_edge']
       if category in Standing_objects:
@@ -255,7 +254,7 @@ def BB_criterion(annotations, standard_method='regular',
       annotation['obbox'] = list(np.round(selected_box,1).reshape(-1))
   return annotations
 
-def show_obbox(I_plot, annotations, title, with_segment=False, with_arrow=True, with_category=True, ax=None):
+def show_obbox(I_plot, annotations,coco, title, with_segment=False, with_arrow=True, with_category=True, ax=None):
     if ax is None:
         fig, ax = plt.subplots()
     ax.imshow(I_plot)
@@ -267,19 +266,17 @@ def show_obbox(I_plot, annotations, title, with_segment=False, with_arrow=True, 
     for annotation in annotations:
         coords = annotation['obbox']
         polygon_coords = [(coords[i], coords[i + 1]) for i in range(0, len(coords), 2)]
-        mpl_patch = MatplotlibPolygon(polygon_coords, closed=True, 
-                                      edgecolor=[random.random() for _ in range(3)], 
+        mpl_patch = MatplotlibPolygon(polygon_coords, closed=True,
+                                      edgecolor=[random.random() for _ in range(3)],
                                       facecolor="none", linewidth=2)
         ax.add_patch(mpl_patch)
         if with_arrow and 'center' in annotation:
             center = annotation['center']
             direction = annotation['direction']
-            ax.arrow(center[1], center[0], direction[1]*50, direction[0]*50, 
+            ax.arrow(center[1], center[0], direction[1]*50, direction[0]*50,
                      color='blue', head_width=5)
         if with_category:
-            category_name = annotation_2_category(annotation)
+            category_name = annotation_2_category(annotation, coco)
             bbox_x, bbox_y = min(polygon_coords, key=lambda point: point[1])#np.max(polygon_coords, axis=0)  # Use first coordinate as reference
             ax.text(bbox_x, bbox_y, category_name, color='white', fontsize=8,
                     bbox=dict(facecolor='black', alpha=0.5, edgecolor='none'))
-
-
