@@ -234,7 +234,7 @@ def get_OBB(annotation, method='regular', plot=False):
   return selected_box
 
 
-def BB_criterion(annotations,coco, standard_method='regular',
+def BB_criterion(annotations, coco, standard_method='regular',
             floating_objects=[], Standing_objects=[],objects_with_axis=[]):
   #All_objects = floating_objects+Standing_objects+objects_with_axis
   if standard_method != 'None':
@@ -254,7 +254,7 @@ def BB_criterion(annotations,coco, standard_method='regular',
       annotation['obbox'] = list(np.round(selected_box,1).reshape(-1))
   return annotations
 
-def show_obbox(I_plot, annotations,coco, title, with_segment=False, with_arrow=True, with_category=True, ax=None):
+def show_obbox(I_plot, annotations, coco, title, with_segment=False, with_arrow=True, with_category=True, ax=None):
     if ax is None:
         fig, ax = plt.subplots()
     ax.imshow(I_plot)
