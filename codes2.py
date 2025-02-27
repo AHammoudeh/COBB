@@ -107,7 +107,6 @@ def intersection_area(rect1: np.ndarray, rect2: np.ndarray, plot=False) -> float
     return intersection.area
 
 
-
 def rle_to_mask(rle):
     """
     Converts Run-Length Encoding (RLE) to a binary segmentation mask.
@@ -134,7 +133,8 @@ def rle_to_mask(rle):
         # Move the starting point forward
         start += length
     # Reshape the flat mask into the specified 2D shape
-    return mask.reshape((height, width))
+    return mask.reshape((width, height))
+
 
 def find_main_axis(mask):
     # Get the coordinates of the object (where mask == 1)
@@ -169,7 +169,6 @@ def oriented_bbox(mask, direction_vector, center):
     rectangle = np.dot(rectangle, rotation_matrix) + center
     return rectangle
 
-
 def annotation_2_category(annotation):
   category_id = annotation['category_id']
   categories = coco.loadCats(category_id)
@@ -201,7 +200,7 @@ def annotation_items(annotation):
         raise ValueError("No object found in the segmentation mask.")
     # Compute the convex hull of all points
     hull = cv2.convexHull(segmented_points)
-    mask = mask
+    #mask = mask
   return hull, image_width, image_height, object_name, mask
 
 def get_OBB(annotation, method='regular', plot=False):
@@ -235,7 +234,6 @@ def get_OBB(annotation, method='regular', plot=False):
     annotation['center']= center
     annotation['direction']= direction
   return selected_box
-
 
 def BB_criterion(annotations, standard_method='regular',
             floating_objects=[], Standing_objects=[],objects_with_axis=[]):
@@ -283,6 +281,5 @@ def show_obbox(I_plot, annotations, title, with_segment=False, with_arrow=True, 
             bbox_x, bbox_y = min(polygon_coords, key=lambda point: point[1])#np.max(polygon_coords, axis=0)  # Use first coordinate as reference
             ax.text(bbox_x, bbox_y, category_name, color='white', fontsize=8,
                     bbox=dict(facecolor='black', alpha=0.5, edgecolor='none'))
-
 
 
