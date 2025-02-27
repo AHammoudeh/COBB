@@ -250,7 +250,7 @@ def BB_criterion(annotations, coco, standard_method='regular',
         method = 'rotating_calipers'#'rotating_calipers'
       else:
         method = standard_method
-      selected_box=get_OBB(annotation, method=method)
+      selected_box=get_OBB(annotation, coco, method=method)
       annotation['obbox'] = list(np.round(selected_box,1).reshape(-1))
   return annotations
 
