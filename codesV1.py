@@ -201,7 +201,7 @@ def annotation_items(annotation, coco):
     #mask = mask
   return hull, image_width, image_height, object_name, mask
 
-def get_OBB(annotation, method='regular', plot=False):
+def get_OBB(annotation, coco, method='regular', plot=False):
   #method = ['regular', 'PCA', 'rotating_calipers','logest_edge']
   #flattened_list = [item for sublist in polygons_lists for item in sublist]
   #hull = np.array(flattened_list).reshape([-1,1,2])
