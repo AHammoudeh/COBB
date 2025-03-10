@@ -288,9 +288,12 @@ def overlay(coco, I_destination,annotations_destination, Image_layers,Mask_layer
   #print('number of all objects:',len(All_annotations_after_pasteAug))
   return projected, All_annotations_after_pasteAug, Added_annotations_list, annotations_destination
 
-def annotations_with_captions(annotations):
+
+def visible_annotations_with_captions(annotations):
   visible_annotations=[]
   for ann in annotations:
     if 'category_id' in ann:
-      visible_annotations.append(ann)
+      if 'Visible_due2_overlay' in ann:
+        if ann['Visible_due2_overlay']>1:
+          visible_annotations.append(ann)
   return visible_annotations
