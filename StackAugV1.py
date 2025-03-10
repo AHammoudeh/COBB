@@ -80,7 +80,7 @@ def compute_inContact_ratio(object_mask, all_objects_mask):
     inContact_count = np.sum(inContact_pixels)
     return inContact_count / perimeter_count if perimeter_count > 0 else 0
 
-def remove_inContact(annotations, Full_mask, inContact_ratio_limit = 0.15):
+def remove_inContact(coco, annotations, Full_mask, inContact_ratio_limit = 0.15):
   annotations_cleaned = []
   for ann in annotations:
     if 'segmentation' in ann:
@@ -232,7 +232,7 @@ def generate_overlayed_frames(coco, I_destination,img_id_destination, N_source_i
     annotations_source = remove_crowded(annotations_source)
     # Filter the annotations: remove objects in contact with other objects
     Full_mask = get_segmentation_mask(annotations_source,img_info_source, coco)
-    annotations_source_cleaned1 = remove_inContact(annotations_source, Full_mask, inContact_ratio_limit)
+    annotations_source_cleaned1 = remove_inContact(coco, annotations_source, Full_mask, inContact_ratio_limit)
     # Filter the annotations: remove objects beyond boundaries
     annotations_source_cleaned = remove_beyond_boudaries(annotations_source_cleaned1,img_info_source, margin_ratio)
     # Augment the selected object
