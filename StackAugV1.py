@@ -265,7 +265,7 @@ def overlay(coco, I_destination,annotations_destination, Image_layers,Mask_layer
       Visibility[j] = calculate_visibility(Current_mask=Mask_layers[j], Overlaying_mask = Overlaying_mask)
       Added_annotations[j]['Visible_due2_overlay'] = min(Visibility[j], 100)
       if 'Visible_due2_cut' in Added_annotations[j].keys():
-        Added_annotations[j]['Visible'] = Visibility[j]*Added_annotations[j]['Visible_due2_cut']
+        Added_annotations[j]['Visible'] = Visibility[j]*Added_annotations[j]['Visible_due2_cut']/100
       else:
         Added_annotations[j]['Visible'] = Visibility[j]
       #print(Visibility[j])
@@ -275,7 +275,7 @@ def overlay(coco, I_destination,annotations_destination, Image_layers,Mask_layer
   for dest_ann in annotations_destination:
     dest_1obj_mask = coco.annToMask(dest_ann)#get_segmentation_mask(anns,img_info, coco)
     Visibility = calculate_visibility(dest_1obj_mask, Overlaying_mask = Overlaying_mask_of_added_objects)
-    dest_ann['Visible_due2_overlay']=Visibility
+    dest_ann['Visible_due2_overlay']=min(Visibility,100)
     dest_ann['Layer']=0
 
   # Merge annotations
