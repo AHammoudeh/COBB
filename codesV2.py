@@ -795,7 +795,7 @@ def get_images_with_n_objects(coco, n):
     # Return list of image IDs with exactly `n` objects
     return [image_id for image_id, count in image_object_count.items() if count == n]
 
-def filter_image_id_beyond_boundaries(imgs_with_n_obj, margin_ratio = 0.05):
+def filter_image_id_beyond_boundaries(coco, imgs_with_n_obj, margin_ratio = 0.05):
   img_ids_list=[]
   for img_id in imgs_with_n_obj:
     img_info = coco.loadImgs(img_id)[0]
