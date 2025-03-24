@@ -17,9 +17,7 @@ from shapely.validation import explain_validity
 from scipy.ndimage import binary_dilation, convolve
 from matplotlib.patches import Polygon as MatplotlibPolygon
 
-
 pylab.rcParams['figure.figsize'] = (4.0, 6.0)
-
 
 MethodsLists = {
     "rotating_calipers":[ "cat", "dog","bed"], #short_objects_captued_oriented,
@@ -27,9 +25,6 @@ MethodsLists = {
     "regular": ["bus","traffic light","horse", "sheep", "cow", "elephant", "bear",
                 "zebra", "giraffe", "chair", "couch","potted plant",  "clock","vase",
                 "teddy bear","car","refrigerator","truck","microwave", "oven", "tv"], }
-
-
-
 
 # Function to calculate rotated rectangles using rotating calipers
 def rotating_calipers_rectangles(hull):
