@@ -622,7 +622,7 @@ def generate_overlayed_frames(coco, I_destination,img_id_destination, N_source_i
   return Image_layers,Mask_layers, Added_annotations
 
 
-def Attach_destination(coco, I_destination,annotations_destination, Image_layers,Mask_layers, Added_annotations, N_source_images=5 ):
+def Attach_destination(coco, I_destination,annotations_destination, Image_layers,Mask_layers, Added_annotations,img_id_destination, N_source_images=5 ):
   I_destination_t = I_destination.astype(np.uint8).copy()  # Initialize with zeros
   img_info_destination=coco.loadImgs(img_id_destination)[0]
   Destination_mask = get_segmentation_mask(annotations_destination,img_info_destination, coco)
