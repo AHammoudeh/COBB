@@ -713,7 +713,7 @@ def overlay(coco, I_projected,annotations_destination, Image_layers,Mask_layers,
 def percnt_to_str(num):
   return str(int(min(num,100)))
 
-def show_obbox(I_plot, annotations, coco, title, bbox_key='obbox', with_segment=False, with_arrow=True, with_category=True, ax=None):
+def show_obbox(I_plot, annotations, coco, title, bbox_key='obbox', with_segment=False, with_arrow=False, with_category=False, ax=None):
     I_plot = I_plot.astype(np.uint8)
     if ax is None:
         fig, ax = plt.subplots()
