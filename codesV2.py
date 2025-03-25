@@ -929,7 +929,7 @@ def rectangle_longest_edge_orientation(obbox):
   angle_deg = int(angle_rad*180/3.14)
   return angle_deg
 
-def label_orientation(annotations):
+def label_orientation(annotations, coco):
   for ann in annotations:
     try:
       category = ann['category']
