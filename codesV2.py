@@ -934,7 +934,7 @@ def label_orientation(annotations):
     try:
       category = ann['category']
     except:
-      category = ann['category']
+      category = annotation_2_category(ann, coco)
     if category in MethodsLists['regular']:
       obbox = ann['obbox']
       theta = rectangle_longest_edge_orientation(obbox)
@@ -947,3 +947,22 @@ def label_orientation(annotations):
       center = ann['center']
       theta = np.arctan2(direction[1], direction[0]) * 180 / np.pi'''
   return annotations
+
+def apply_transformation_with_padding(image, standard_size=None, angle=0, scale=1, tx=0, ty=0):
+    height, width = image.shape[:2]
+    # Compute the new output size
+    if standard_size is None:
+      new_width = int(width * scale)
+      new_height = int(height * scale)
+    else:
+      new_width = standard_size
+      new_height = standard_size
+    # Compute the transformation matrix
+    center = (width // 2, height // 2)
+    M = cv2.getRotationMatrix2D(center, angle, scale)
+    # Adjust translation to fit the scaled image in the output
+    M[0, 2] += (new_width - width) / 2 + tx
+    M[1, 2] += (new_height - height) / 2 + ty
+    # Apply transformation with new size
+    transformed_image = cv2.warpAffine(image, M, (new_width, new_height), borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+    return transformed_image, M
