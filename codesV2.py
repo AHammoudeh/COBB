@@ -948,6 +948,128 @@ def label_orientation(annotations, coco):
       theta = np.arctan2(direction[1], direction[0]) * 180 / np.pi'''
   return annotations
 
+def get_obb_onthefly(coco, img_id=None, plot_image=True, with_segment=True, with_category=True, with_angle=True, img_ids_list=None): 
+  if img_ids_list is None:
+    img_ids_list = coco.getImgIds()
+
+  if img_id is None:
+    img_id = random.sample(img_ids_list, 1)[0]
+    print(f'img_id={img_id}')
+
+  img_path=coco.loadImgs(img_id)[0]['coco_url']
+  annotations = coco.loadAnns(coco.getAnnIds(imgIds=img_id))
+  #----- show oriented bounding boxes ------------------
+  anns = BB_criterion(annotations, coco, standard_method= 'PCA',
+                      floating_objects=MethodsLists['rotating_calipers'],
+                      Standing_objects=MethodsLists['regular'], objects_with_axis=MethodsLists['PCA'])
+  if plot_image:
+    if with_angle:
+      anns = label_orientation(anns, coco)
+    I = io.imread(img_path)
+    I_plot = I.copy()
+    fig, ax = plt.subplots(figsize=(5, 5), constrained_layout=True)
+    show_obbox(I_plot, anns, coco, title='',bbox_key='obbox', with_segment=with_segment, with_arrow=False,with_category=with_category, ax=ax)
+    return anns, img_id
+
+def get_obb_fromAnnotation(coco, bbox_key='obbox', img_id=None, plot_image=True, with_segment=True, with_category=True): 
+  if img_id is None:
+    img_ids_list = coco.getImgIds()
+    img_id = random.sample(img_ids_list, 1)[0]
+    print(f'img_id={img_id}')
+  img_path=coco.loadImgs(img_id)[0]['coco_url']
+  anns = coco.loadAnns(coco.getAnnIds(imgIds=img_id))
+  if plot_image:
+    I = io.imread(img_path)
+    I_plot = I.copy()
+    fig, ax = plt.subplots(figsize=(5, 5), constrained_layout=True)
+    show_obbox(I_plot, anns, coco, title='',bbox_key=bbox_key, with_segment=with_segment, with_arrow=False,with_category=with_category, ax=ax)
+    return anns, img_id
+
+def Augment_anImage(coco,img_id=None,  N_augmented_obj=5, img_ids_to_augment_from=None,
+                    bbox_kind = 'obbox',  plot_image=True, with_segment=True, with_category=True, plot_DAG=True):
+  N_source_images=N_augmented_obj#5
+  #bbox_kind = 'obbox' #'bbox', 'obbox'
+  if img_ids_to_augment_from is None:
+    imgs_with_n_obj = get_images_with_n_objects(coco, n=  1)
+    img_ids_list = filter_image_id_beyond_boundaries(coco, imgs_with_n_obj)
+  else:
+    img_ids_list= img_ids_to_augment_from
+  if img_id is None:
+    img_id_destination = random.sample(img_ids_list, 1)[0] #coco.getImgIds()[random.randint(0, 5000)]
+    print(f'img_id_destination={img_id_destination}')
+  img_path=coco.loadImgs(img_id_destination)[0]['coco_url']
+  I_destination = io.imread(img_path)
+  annotationsD = coco.loadAnns(coco.getAnnIds(imgIds=img_id_destination))
+  annotations_destination = remove_crowded(annotationsD)
+  Image_layers, Mask_layers, Added_annotations = generate_overlayed_frames(coco, I_destination,img_id_destination, N_source_images,
+                                                                          img_ids_list =img_ids_list, margin_ratio=1, inContact_ratio_limit=1, with_unbounded_obbox=True)
+  I_projected, Image_layers,Mask_layers = Attach_destination(coco, I_destination,annotations_destination, Image_layers,Mask_layers, Added_annotations,img_id_destination, N_source_images)
+  #Stack_Order_Matrix = get_Stack_Order_Matrix(Mask_layers, IoU= True)
+  I_projected, Visible_annotations, Added_annotations_list, annotations_destination, objects_order, Stack_Order_Matrix_iou = overlay(coco, I_projected,annotations_destination,
+                                                                                            Image_layers,Mask_layers, Added_annotations,
+                                                                                            N_source_images, with_unbounded_obbox=True)
+  Visible_annotations =visible_annotations_with_captions(Visible_annotations)
+  Visible_annotations = label_orientation(Visible_annotations, coco)
+  Stack_Order_Matrix = (Stack_Order_Matrix_iou>0)+0
+  print(objects_order,'\n' ,Stack_Order_Matrix)
+  #Plot
+  if plot_image:
+    I_plot = I_projected.copy()
+    fig, ax = plt.subplots(figsize=(5, 5), constrained_layout=True)
+    #anns = BB_criterion(Visible_annotations, coco)#, standard_method='regular', floating_objects=[],Standing_objects=[], objects_with_axis=[])
+    show_obbox(I_plot, Visible_annotations, coco,bbox_key=bbox_kind, title='', with_segment=with_segment, with_arrow=False,with_category=with_category, ax=ax)
+    print('The label shown above an object: <object category, -No. objects behind it, +No. objects over it , visibile area%, /, visible area% due to cut only, orientation >')
+  if plot_DAG:
+    adjacency_dict = get_DAG(Stack_Order_Matrix, objects_order, plot = plot_DAG )
+  return Visible_annotations, I_projected,  Stack_Order_Matrix, objects_order, adjacency_dict
+
+
+#img_id = img_id_destination
+
+def Combare_OBB_methods(coco, MethodsLists, img_id=None, img_ids_list=None): 
+  if img_ids_list is None:
+    img_ids_list = coco.getImgIds()
+  if img_id is None:
+    img_id = random.sample(img_ids_list, 1)[0]
+    print(f'img_id={img_id}')
+  img_path=coco.loadImgs(img_id)[0]['coco_url']
+  annotations = coco.loadAnns(coco.getAnnIds(imgIds=img_id))
+  I = io.imread(img_path)
+  I_plot = I.copy()
+  methods = list(MethodsLists.keys())
+  fig, axes = plt.subplots(1, len(methods) + 1, figsize=(5 * (len(methods) + 1), 5), constrained_layout=True)
+  # Plot original image first
+  axes[0].imshow(I_plot)
+  axes[0].axis('off')
+  axes[0].set_title("Original Image")
+  Ann_dict={}
+  for i, standard_method in enumerate(methods):
+      anns = BB_criterion(annotations, coco, standard_method, floating_objects=[], Standing_objects=[], objects_with_axis=[])
+      Ann_dict[standard_method] = anns
+      show_obbox(I_plot, anns, coco, title=standard_method,
+                with_segment=standard_method == 'regular',
+                with_arrow=(standard_method == 'PCA'),
+                with_category=False, ax=axes[i + 1])
+  #plot
+  fig, ax = plt.subplots(figsize=(5, 5), constrained_layout=True)
+  anns = BB_criterion(annotations,coco, standard_method= 'PCA', floating_objects=MethodsLists['rotating_calipers'],
+                      Standing_objects=MethodsLists['regular'], objects_with_axis=MethodsLists['PCA'])
+  anns = label_orientation(anns, coco)
+  show_obbox(I_plot, anns, coco, title='Selected', with_segment=False, with_arrow=False,with_category=True, ax=ax)
+  plt.show()
+  return Ann_dict
+
+
+
+
+
+
+
+
+
+
+
+
 def apply_transformation_with_padding(image, standard_size=None, angle=0, scale=1, tx=0, ty=0):
     height, width = image.shape[:2]
     # Compute the new output size
