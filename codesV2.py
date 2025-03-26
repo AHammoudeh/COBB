@@ -871,7 +871,7 @@ def get_DAG(Stack_Order_Matrix, node_dict, plot = True ):
               continue
           if Stack_Order_Matrix[i, j] == 1:
               adjacency_dict[node_names[i]].append(node_names[j])
-  return adjacency_dict, plt
+  return adjacency_dict
 
 def print_annotations(data_list: list):
     formatted_items = []
