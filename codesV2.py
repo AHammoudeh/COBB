@@ -1026,7 +1026,7 @@ def Augment_anImage(coco,img_id=None,  N_augmented_obj=5, img_ids_to_augment_fro
 
 #img_id = img_id_destination
 
-def Combare_OBB_methods(coco, MethodsLists, img_id=None, img_ids_list=None): 
+def Compare_OBB_methods(coco, MethodsLists, img_id=None, img_ids_list=None): 
   if img_ids_list is None:
     img_ids_list = coco.getImgIds()
   if img_id is None:
