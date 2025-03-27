@@ -996,7 +996,7 @@ def Augment_anImage(coco,img_id=None,  N_augmented_obj=5, img_ids_to_augment_fro
     img_ids_list= img_ids_to_augment_from
   if img_id is None:
     img_id_destination = random.sample(img_ids_list, 1)[0] #coco.getImgIds()[random.randint(0, 5000)]
-    print(f'img_id_destination={img_id_destination}')
+    #print(f'img_id_destination={img_id_destination}')
   img_path=coco.loadImgs(img_id_destination)[0]['coco_url']
   I_destination = io.imread(img_path)
   annotationsD = coco.loadAnns(coco.getAnnIds(imgIds=img_id_destination))
@@ -1011,7 +1011,7 @@ def Augment_anImage(coco,img_id=None,  N_augmented_obj=5, img_ids_to_augment_fro
   Visible_annotations =visible_annotations_with_captions(Visible_annotations)
   Visible_annotations = label_orientation(Visible_annotations, coco)
   Stack_Order_Matrix = (Stack_Order_Matrix_iou>0)+0
-  print(objects_order,'\n' ,Stack_Order_Matrix)
+  #print(objects_order,'\n' ,Stack_Order_Matrix)
   #Plot
   if plot_image:
     I_plot = I_projected.copy()
