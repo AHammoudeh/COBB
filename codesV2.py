@@ -1019,9 +1019,9 @@ def Augment_anImage(coco,img_id=None,  N_augmented_obj=5, img_ids_to_augment_fro
     #anns = BB_criterion(Visible_annotations, coco)#, standard_method='regular', floating_objects=[],Standing_objects=[], objects_with_axis=[])
     show_obbox(I_plot, Visible_annotations, coco,bbox_key=bbox_kind, title='', with_segment=with_segment, with_arrow=False,with_category=with_category, ax=ax)
     print('line shown above an object: <object category, -No. objects behind it, +No. objects over it , visible area%, /, visible area% due to cut only, orientation >')
-  adjacency_dict={}
-  if plot_DAG:
-    adjacency_dict = get_DAG(Stack_Order_Matrix, objects_order, plot = plot_DAG )
+  #adjacency_dict={}
+  #if plot_DAG:
+  adjacency_dict = get_DAG(Stack_Order_Matrix, objects_order, plot = plot_DAG )
   return Visible_annotations, I_projected,  Stack_Order_Matrix, objects_order, adjacency_dict
 
 
