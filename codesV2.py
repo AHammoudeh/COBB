@@ -986,7 +986,7 @@ def get_obb_fromAnnotation(coco, bbox_key='obbox', img_id=None, plot_image=True,
     return anns, img_id
 
 def Augment_anImage(coco,img_id=None,  N_augmented_obj=5, img_ids_to_augment_from=None,
-                    bbox_kind = 'obbox',  plot_image=True, with_segment=True, with_category=True, plot_DAG=True):
+                    bbox_kind = 'obbox',  plot_image=True, with_segment=True, with_category=True, plot_DAG=True, IoU=False):
   N_source_images=N_augmented_obj#5
   #bbox_kind = 'obbox' #'bbox', 'obbox'
   if img_ids_to_augment_from is None:
@@ -1010,7 +1010,10 @@ def Augment_anImage(coco,img_id=None,  N_augmented_obj=5, img_ids_to_augment_fro
                                                                                             N_source_images, with_unbounded_obbox=True)
   Visible_annotations =visible_annotations_with_captions(Visible_annotations)
   Visible_annotations = label_orientation(Visible_annotations, coco)
-  Stack_Order_Matrix = (Stack_Order_Matrix_iou>0)+0
+  if IoU:
+    overlay_matrix = Stack_Order_Matrix_iou
+  else:
+    overlay_matrix =  (Stack_Order_Matrix_iou>0)+0
   #print(objects_order,'\n' ,Stack_Order_Matrix)
   #Plot
   if plot_image:
@@ -1022,7 +1025,7 @@ def Augment_anImage(coco,img_id=None,  N_augmented_obj=5, img_ids_to_augment_fro
   #adjacency_dict={}
   #if plot_DAG:
   adjacency_dict = get_DAG(Stack_Order_Matrix, objects_order, plot = plot_DAG )
-  return Visible_annotations, I_projected,  Stack_Order_Matrix, objects_order, adjacency_dict
+  return Visible_annotations, I_projected,  overlay_matrix, objects_order, adjacency_dict
 
 
 #img_id = img_id_destination
