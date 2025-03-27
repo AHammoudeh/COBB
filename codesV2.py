@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from shapely.geometry import Polygon
 from sklearn.decomposition import PCA
 from shapely.geometry.polygon import orient
+from skimage.exposure import match_histograms
 from shapely.validation import explain_validity
 from scipy.ndimage import binary_dilation, convolve
 from matplotlib.patches import Polygon as MatplotlibPolygon
@@ -986,7 +987,7 @@ def get_obb_fromAnnotation(coco, bbox_key='obbox', img_id=None, plot_image=True,
     return anns, img_id
 
 def Augment_anImage(coco,img_id=None,  N_augmented_obj=5, img_ids_to_augment_from=None,
-                    bbox_kind = 'obbox',  plot_image=True, with_segment=True, with_category=True, plot_DAG=True, IoU=False):
+                    bbox_kind = 'obbox',  plot_image=True, with_segment=True, with_category=True, plot_DAG=True, IoU=False, smoothing_factor = 0.3):
   N_source_images=N_augmented_obj#5
   #bbox_kind = 'obbox' #'bbox', 'obbox'
   if img_ids_to_augment_from is None:
@@ -1005,6 +1006,13 @@ def Augment_anImage(coco,img_id=None,  N_augmented_obj=5, img_ids_to_augment_fro
                                                                           img_ids_list =img_ids_list, margin_ratio=1, inContact_ratio_limit=1, with_unbounded_obbox=True)
   I_projected, Image_layers,Mask_layers = Attach_destination(coco, I_destination,annotations_destination, Image_layers,Mask_layers, Added_annotations,img_id_destination, N_source_images)
   #Stack_Order_Matrix = get_Stack_Order_Matrix(Mask_layers, IoU= True)
+  
+  if smoothing_factor>0:
+    #Mask_layers = Mask_layers0.copy()
+    #Image_layers = Image_layers0.copy()
+    for i in range(1,Mask_layers.shape[0]-1):
+      Image_layers[i], Mask_layers[i] = refine_pasted_object(Image_layers[i], Mask_layers[i], I_destination, brush_size = smoothing_factor)
+
   I_projected, Visible_annotations, Added_annotations_list, annotations_destination, objects_order, Stack_Order_Matrix_iou = overlay(coco, I_projected,annotations_destination,
                                                                                             Image_layers,Mask_layers, Added_annotations,
                                                                                             N_source_images, with_unbounded_obbox=True)
@@ -1028,6 +1036,36 @@ def Augment_anImage(coco,img_id=None,  N_augmented_obj=5, img_ids_to_augment_fro
   adjacency_dict = get_DAG(Stack_Order_Matrix, objects_order, plot = plot_DAG )
   return Visible_annotations, I_projected,  overlay_matrix, objects_order, adjacency_dict
 
+def refine_pasted_object(object_img, mask, bg_img, brush_size = 1):
+    """
+    Refines the pasted object to blend naturally with the background.
+
+    Parameters:
+    - object_img (numpy.ndarray): The object image (H, W, 3).
+    - mask (numpy.ndarray): Binary mask of the object (H, W).
+    - bg_img (numpy.ndarray): The background image (H, W, 3).
+
+    Returns:
+    - fine_tuned_mask (numpy.ndarray): Smoothed mask with feathered edges.
+    - fine_tuned_object (numpy.ndarray): Object with refined edges and color correction.
+    """
+    # Ensure mask is binary
+    #mask = (mask > 128).astype(np.uint8) * 255  
+
+    # Smooth the edges using Gaussian blur
+    lenth = int(np.clip((brush_size*(np.sum(mask)/100)),0,30))//2
+    fine_tuned_mask = cv2.GaussianBlur(mask* 255 , (2*lenth+1, 2*lenth+1), 5)/255.0
+
+    # Match color of object with background using histogram matching
+    
+    matched_object = match_histograms(object_img*fine_tuned_mask[:,:,np.newaxis] + bg_img*(1-fine_tuned_mask[:,:,np.newaxis]), bg_img, channel_axis=-1).astype(np.uint8)
+
+    # Apply feathered mask to object image for smooth blending
+    fine_tuned_object = matched_object*(fine_tuned_mask[:,:,np.newaxis])
+    '''fine_tuned_object = np.zeros_like(object_img, dtype=np.uint8)
+    for c in range(3):
+        fine_tuned_object[:, :, c] = (fine_tuned_mask) * matched_object[:, :, c]'''
+    return fine_tuned_object, fine_tuned_mask
 
 #img_id = img_id_destination
 
