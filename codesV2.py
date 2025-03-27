@@ -1010,10 +1010,11 @@ def Augment_anImage(coco,img_id=None,  N_augmented_obj=5, img_ids_to_augment_fro
                                                                                             N_source_images, with_unbounded_obbox=True)
   Visible_annotations =visible_annotations_with_captions(Visible_annotations)
   Visible_annotations = label_orientation(Visible_annotations, coco)
+  Stack_Order_Matrix = (Stack_Order_Matrix_iou>0)+0
   if IoU:
     overlay_matrix = Stack_Order_Matrix_iou
   else:
-    overlay_matrix =  (Stack_Order_Matrix_iou>0)+0
+    overlay_matrix =  Stack_Order_Matrix
   #print(objects_order,'\n' ,Stack_Order_Matrix)
   #Plot
   if plot_image:
