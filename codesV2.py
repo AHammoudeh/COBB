@@ -661,7 +661,8 @@ def overlay(coco, I_projected,annotations_destination, Image_layers,Mask_layers,
   Stack_Order_Matrix = get_Stack_Order_Matrix(Mask_layers, IoU= True)
   # loop through pasted objects
   for j in range(N_source_images+1):
-    I_projected[Mask_layers[j] > 0] = 0  # Zero out pixels where the new object will be placed
+    #I_projected[Mask_layers[j] > 0] = 0  # Zero out pixels where the new object will be placed
+    I_projected= I_projected*(1-Mask_layers[j,:,:,np.newaxis])
     I_projected = np.add(I_projected, Image_layers[j]).astype(np.uint8)  # Place the new object
     if j in Visible_annotations.keys():
       Visible_annotations[j]['N_obj_behind'] = int(np.sum(Stack_Order_Matrix[:,j]>0))
@@ -708,7 +709,6 @@ def overlay(coco, I_projected,annotations_destination, Image_layers,Mask_layers,
   All_annotations_after_pasteAug = annotations_destination+Added_annotations_list
   #print(objects_order)
   return I_projected, All_annotations_after_pasteAug, Added_annotations_list, annotations_destination, objects_order, Stack_Order_Matrix
-
 
 def percnt_to_str(num):
   return str(int(min(num,100)))
